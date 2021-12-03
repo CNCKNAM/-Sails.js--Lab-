@@ -1,0 +1,114 @@
+<!--aginate.ejs-->
+<table
+  class="table is-bordered is-striped is-hoverable is-fullwidth"
+  id="personsTable"
+></table>
+<nav class="pagination" role="navigation" aria-label="pagination">
+  <a class="pagination-previous" id="previousButton">Previous</a>
+  <a class="pagination-next" id="nextButton">Next page</a>
+  <ul class="pagination-list">
+    <li>
+      <a class="pagination-link" id="firstLink">1</a>
+    </li>
+    <li>
+      <span class="pagination-ellipsis">&hellip;</span>
+    </li>
+    <li>
+      <a class="pagination-link" id="previousLink">45</a>
+    </li>
+    <li>
+      <a class="pagination-link is-current" id="currentLink">46</a>
+    </li>
+    <li>
+      <a class="pagination-link" id="nextLink">47</a>
+    </li>
+    <li>
+      <span class="pagination-ellipsis">&hellip;</span>
+    </li>
+    <li>
+      <a class="pagination-link" id="lastLink">86</a>
+    </li>
+  </ul>
+</nav>
+<script>
+  function buildLinks(perPage, current) {
+    // var baseUrl = "/person/paginate?perPage=" + perPage + "&current=";
+
+    // firstLink.href = baseUrl + 1;
+    // previousButton.href = baseUrl + (current - 1);
+    // previousLink.href = baseUrl + (current - 1);
+    // currentLink.href = baseUrl + current;
+    // nextLink.href = baseUrl + (current + 1);
+    // nextButton.href = baseUrl + (current + 1);
+    // lastLink.href = baseUrl + Math.ceil(total / perPage);
+
+    var total = parseInt("<%= total %>");
+    firstLink.onclick = function () {
+      fetchData(perPage, 1);
+    };
+    previousButton.onclick = function () {
+      fetchData(perPage, current - 1);
+    };
+    previousLink.onclick = function () {
+      fetchData(perPage, current - 1);
+    };
+    currentLink.onclick = function () {
+      fetchData(perPage, current);
+    };
+    nextLink.onclick = function () {
+      fetchData(perPage, current + 1);
+    };
+    nextButton.onclick = function () {
+      fetchData(perPage, current + 1);
+    };
+    lastLink.onclick = function () {
+      fetchData(perPage, Math.ceil(total / perPage));
+    };
+
+    previousLink.innerHTML = current - 1;
+    currentLink.innerHTML = current;
+    nextLink.innerHTML = current + 1;
+    lastLink.innerHTML = Math.ceil(total / perPage);
+
+    if (current <= 1) {
+      previousButton.setAttribute("disabled", true);
+      previousButton.onclick = null;
+      previousLink.style.display = "none";
+    } else {
+      previousButton.removeAttribute("disabled");
+      previousLink.style.display = "block";
+    }
+
+    if (current >= Math.ceil(total / perPage)) {
+      nextButton.setAttribute("disabled", true);
+      nextButton.onclick = null;
+      nextLink.style.display = "none";
+    } else {
+      nextButton.removeAttribute("disabled");
+      nextLink.style.display = "block";
+    }
+  }
+
+  async function fetchData(perPage, current) {
+    var response = await fetch(
+      "/person/aginate?perPage=" + perPage + "&current=" + current
+    );
+
+    if (response.ok) {
+      var persons = await response.json();
+
+      var temp = "";
+      persons.forEach(function (person) {
+        temp +=
+          "<tr><td>" + person.name + "</td><td>" + person.age + "</td></tr>";
+      });
+
+      document.getElementById("personsTable").innerHTML = temp;
+      buildLinks(perPage, current);
+    } else {
+      document.getElementById("personsTable").innerHTML =
+        "<tr><td>" + response.statusText + "</td></tr>";
+    }
+  }
+  fetchData(2, 1);
+</script>

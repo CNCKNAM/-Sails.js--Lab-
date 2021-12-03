@@ -1,0 +1,96 @@
+<div id="app">
+    <!-- the table element-->
+    <section class="section">
+
+        <div class="card" v-for="person in persons">
+            <header class="card-header">
+                <p class="card-header-title">
+                    {{person.name}}
+                </p>
+            </header>
+            <div class="card-content">
+                <div class="content">
+                    {{person.age}}
+                </div>
+            </div>
+        </div>
+        
+    </section>
+    <!-- the nav element-->
+    <nav class="pagination" role="navigation">
+        <button class="pagination-previous" v-bind:disabled="isFirstPage" v-on:click="fetchData(perPage, current-1)">Previous</button>
+        <button class="pagination-next"  :disabled="isLastPage" v-on:click="fetchData(perPage, current+1)">Next page</button>
+        <ul class="pagination-list">
+            <li>
+                <a class="pagination-link" @click="fetchData(perPage, 1)">1</a>
+            </li>
+            <li>
+                <span class="pagination-ellipsis">&hellip;</span>
+            </li>
+            <li>
+                <a class="pagination-link" v-if="!isFirstPage"@click="fetchData(perPage, current-1)">{{current-1}}</a>
+            </li>
+            <li>
+                <a class="pagination-link is-current" @click="fetchData(perPage, current)">{{current}}</a>
+            </li>
+            <li>
+                <a class="pagination-link" v-if="!isLastPage"@click="fetchData(perPage, current+1)">{{current+1}}</a>
+            </li>
+            <li>
+                <span class="pagination-ellipsis">&hellip;</span>
+            </li>
+            <li>
+                <a class="pagination-link" @click="fetchData(perPage, Math.ceil(total / perPage))">{{ Math.ceil(total / perPage) }}</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="columns">
+        <b-input class="column" v-model="perPage"></b-input>
+        <div class="column">
+            <button class="button is-warning" @click="fetchData(perPage, 1)">GO!</button>
+        </div>
+    </div>
+</div>
+<script src="https://unpkg.com/vue"></script>
+<!-- Full bundle -->
+<script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+
+<!-- Individual components -->
+<script src="https://unpkg.com/buefy/dist/components/table"></script>
+<script src="https://unpkg.com/buefy/dist/components/input"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+    total: parseInt("<%= total %>"),
+    persons: [],
+    current: 1,
+    perPage: 2,
+},
+computed: {
+    isFirstPage: function () { return this.current <= 1 },
+    isLastPage: function () { return this.current >= Math.ceil(this.total / this.perPage) },
+},
+mounted: function () {
+    this.fetchData(this.perPage, this.current);
+},
+methods: {
+    fetchData: async function (perPage, current) {
+
+var response = await fetch('/person/vaginate?perPage=' + perPage + '&current=' + current);
+
+if (response.ok) {
+
+    this.persons = await response.json();
+    this.perPage = this.perPage = Math.max(perPage, 2) || 2;;
+this.current = current;
+    // `this` inside methods points to the Vue instance
+
+} else {
+    alert(response.statusText);
+}
+},
+},
+    })
+</script>
